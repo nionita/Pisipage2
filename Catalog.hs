@@ -11,7 +11,8 @@ data CEntry = CEntry {
                   ctitle :: String,
                   cyear  :: String,
                   ctech  :: String,
-                  cdims  :: String
+                  cdims  :: String,
+                  cprice :: String
               }
 
 newtype Catalog = Catalog (M.Map String CEntry)
@@ -27,7 +28,7 @@ findCatElem :: String -> Catalog -> Maybe CEntry
 findCatElem s (Catalog m) = M.lookup s m
 
 makeBTitle :: CEntry -> String
-makeBTitle ce = foldl (+++) (makeTTitle ce) [cyear ce, ctech ce, cmdims]
+makeBTitle ce = foldl (+++) (makeTTitle ce) [cyear ce, ctech ce, cmdims, formprice]
     where (+++) "" b = b
           (+++) a "" = a
           (+++) a b = a ++ ", " ++ b
@@ -38,6 +39,14 @@ makeBTitle ce = foldl (+++) (makeTTitle ce) [cyear ce, ctech ce, cmdims]
                      else if cdims ce `endswith` "cm"
                             then cdims ce
                             else cdims ce ++ " cm"
+          formprice = if null (cprice ce)
+                         then ""
+                         else cprice ce
+{--
+                         else if cprice ce `endswith` "€"
+                                 then cprice ce
+                                 else cprice ce ++ " €"
+--}
 
 makeTTitle :: CEntry -> String
 makeTTitle ce = nicetitle [] $ ctitle ce
@@ -56,7 +65,8 @@ namesToCols = M.fromList $ [
         ("title", ["TITEL", "Titel"]),
         ("dims", ["GROSSE", "Dimension"]),
         ("tech", ["TECHNIK", "Technik"]),
-        ("year", ["JAHR", "Jahr"])
+        ("year", ["JAHR", "Jahr"]),
+        ("price", ["Preis", "Price"])
     ]
 
 parseCat :: String -> IO Catalog
@@ -71,16 +81,17 @@ makeParseFunc :: String -> String -> (String, CEntry)
 makeParseFunc hea inp = (k, ce)
     where Right hcols = parse line "Header" hea
           Right cols  = parse line "Line"   inp
-          k = getField "code"  hcols cols
-          t = getField "title" hcols cols
-          y = getField "year"  hcols cols
-          h = getField "tech"  hcols cols
-          d = getField "dims"  hcols cols
-          ce = CEntry { ctitle = t, cyear = y, ctech = h, cdims = d } 
+          k = getField "code"  False hcols cols
+          t = getField "title" False hcols cols
+          y = getField "year"  False hcols cols
+          h = getField "tech"  False hcols cols
+          d = getField "dims"  False hcols cols
+          p = getField "price" True  hcols cols
+          ce = CEntry { ctitle = t, cyear = y, ctech = h, cdims = d, cprice = p } 
 
-getField :: String -> [String] -> [String] -> String
-getField code cs vs
-    | null cols = error erm
+getField :: String -> Bool -> [String] -> [String] -> String
+getField code opt cs vs
+    | null cols = if opt then "" else error erm
     | otherwise = vs !! i
     where Just aliases = M.lookup code namesToCols
           cols = dropWhile (== Nothing)

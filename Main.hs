@@ -43,6 +43,7 @@ contactArgs = TextsArgs {
 
 exposArgs = TextsArgs {
                 tfiles = [
+                    "Expo2011.txt",
                     "Expo2010.txt",
                     "Expo2009.txt",
                     "Expo2008.txt",

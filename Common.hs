@@ -27,7 +27,7 @@ navidiv la rt pid cnavi
 
 copyr = thediv `hid` "copy" << (
             copyright
-        +++ myStringToHtml "Mariana Ionita 2007-2010"
+        +++ myStringToHtml "Mariana Ionita 2007-2011"
         )
 
 mylogo gif = thediv `hid` "logo"
