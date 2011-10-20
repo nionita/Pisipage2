@@ -25,6 +25,9 @@ linksArgs = LinksArgs {
                     "Links-Vereine.txt",
                     "Links-Galerien.txt",
                     "Links-Kuenstler.txt",
+                    "Links-Fotografie.txt",
+                    "Links-Zeitung.txt",
+                    "Links-Museen.txt",
                     "Links-Diverse.txt"
                 ]
             }
@@ -105,6 +108,7 @@ main = do
     catFiles <- map (pathToCats </>) . filter isCat
                     <$> getDirectoryContents pathToCats
     catalog <- combCats <$> mapM parseCat catFiles
+    -- showCat catalog
     home  <- getHome baseDir homeArgs
     links <- getLinks "links" baseDir linksArgs
     vita  <- getTexts "vita" baseDir vitaArgs
@@ -139,3 +143,5 @@ readFotoGals = mapM (readGallery mempty) $ map triple fotoGals
 
 isCat :: String -> Bool
 isCat f = takeExtensions f == ".csv"
+
+showCat cat = mapM_ putStrLn $ map show $ filter ((/= "") . cprice) $ catElems cat

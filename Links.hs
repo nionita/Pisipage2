@@ -51,7 +51,7 @@ fileToLGrp base filn = do
     return grp
 
 lineToLink :: String -> Link
-lineToLink lin = Link { llink = a, ldesc = tail b }
+lineToLink lin = Link { llink = a, ldesc = if null b then b else tail b }
     where (a, b) = break (== '|') lin
 
 -- This will render the links page
@@ -71,4 +71,4 @@ renderLinksGrp lg = foldl (+++) stheme $ map renderLink $ links lg
     where stheme = br +++ br +++ h4 << myStringToHtml (ltheme lg)
 
 renderLink li = br +++ anchor hdesc ! [href (llink li)]
-    where hdesc = myStringToHtml $ ldesc li
+    where hdesc = myStringToHtml $ if null (ldesc li) then llink li else ldesc li

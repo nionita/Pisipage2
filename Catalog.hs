@@ -13,7 +13,7 @@ data CEntry = CEntry {
                   ctech  :: String,
                   cdims  :: String,
                   cprice :: String
-              }
+              } deriving Show
 
 newtype Catalog = Catalog (M.Map String CEntry)
 
@@ -60,6 +60,8 @@ makeTTitle ce = nicetitle [] $ ctitle ce
                       || isDigit a && isAlpha b
                       || isLower a && isUpper b
 
+catElems (Catalog m) = M.elems m
+
 namesToCols = M.fromList $ [
         ("code", ["COD", "Cod"]),
         ("title", ["TITEL", "Titel"]),
@@ -72,38 +74,47 @@ namesToCols = M.fromList $ [
 parseCat :: String -> IO Catalog
 parseCat file = do
     putStrLn $ "Reading catalog " ++ file
-    lns <- lines `fmap` readFile file
+    lns <- (filter nonEmpty . lines) `fmap` readFile file
     when (null lns) $ fail $ "No line in catalog " ++ file
     let parsEn = makeParseFunc $ head lns
     return $ Catalog $ M.fromList $ map parsEn $ tail lns
 
 makeParseFunc :: String -> String -> (String, CEntry)
 makeParseFunc hea inp = (k, ce)
-    where Right hcols = parse line "Header" hea
-          Right cols  = parse line "Line"   inp
-          k = getField "code"  False hcols cols
+    where k = getField "code"  False hcols cols
           t = getField "title" False hcols cols
           y = getField "year"  False hcols cols
           h = getField "tech"  False hcols cols
           d = getField "dims"  False hcols cols
           p = getField "price" True  hcols cols
           ce = CEntry { ctitle = t, cyear = y, ctech = h, cdims = d, cprice = p } 
+          hcols = getFields "header" hea
+          cols  = getFields "line"   inp
+
+getFields :: String -> String -> [String]
+getFields mes inp
+    = case parse line mes inp of
+        Left e     -> error $ "Parse error in " ++ mes ++ ":\n" ++ show e ++ "\nInput: " ++ inp
+        Right cols -> cols
 
 getField :: String -> Bool -> [String] -> [String] -> String
-getField code opt cs vs
+getField fname opt cs vs
     | null cols = if opt then "" else error erm
     | otherwise = vs !! i
-    where Just aliases = M.lookup code namesToCols
+    where Just aliases = M.lookup fname namesToCols
           cols = dropWhile (== Nothing)
                   $ map (flip lookup (zip cs [0..])) aliases
           i = fromJust $ head cols
-          erm = "Field code " ++ code ++ " not found\n"
+          erm = "Field " ++ fname ++ " not found\n"
                 ++ "Codes: " ++ show cs
                 ++ "\nAliases: " ++ show aliases
 
-line = field `sepBy` (char ',')
+line = do
+    l <- field `sepBy` (char ',')
+    eof
+    return l
 
-field = stringF <|> numberF
+field = stringF <|> preisF <|> numberF
 
 stringF = do
     char '"'
@@ -112,3 +123,17 @@ stringF = do
     return val
 
 numberF = many digit
+
+preisF = do
+    c <- noneOf ",0123456789"
+    spaces
+    n <- numberF
+    return $ c : ' ' : n
+
+emptyLine = do
+    many1 (char ',')
+    eof
+
+nonEmpty line = case parse emptyLine "" line of
+    Left _ -> True
+    _      -> False
