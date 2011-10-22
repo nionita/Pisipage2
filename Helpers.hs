@@ -16,6 +16,9 @@ mbreak n p as
     | otherwise = as1 : mbreak (n-1) p (tail as2)
     where (as1, as2) = break p as
 
+myStringToHtml = stringToHtml
+
+{--
 -- Irgendwie passt der Unicode von Haskell nicht mit dem von Win 7 (aber alle Viewer,
 -- wie Firefox, Vim, Safari, etc geben Win 7 Recht!)
 myStringToHtml = stringToHtml . map umlaute
@@ -28,3 +31,4 @@ myStringToHtml = stringToHtml . map umlaute
                9604 -> chr 220;	-- Ü
                9600 -> chr 223;	-- ß
                _    -> x
+--}

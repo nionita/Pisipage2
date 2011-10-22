@@ -1,6 +1,7 @@
 module Texts where
 import Data.List (intersperse)
 import qualified System.FilePath as FP ((</>))
+import System.IO (TextEncoding)
 import Text.XHtml
 import Base
 import Common
@@ -41,25 +42,25 @@ textsIdent = txtId
 
 -- This will create a texts content structure given the page ident,
 -- the home directory and the links parameters
-getTexts :: Ident -> String -> TextsArgs -> IO Texts
-getTexts pid dir teargs = do
-    prs <- sequence [ getTLang la dir1 teargs | la <- [De, En, Ro]]
+getTexts :: TextEncoding -> Ident -> String -> TextsArgs -> IO Texts
+getTexts tenc pid dir teargs = do
+    prs <- sequence [ getTLang tenc la dir1 teargs | la <- [De, En, Ro]]
     return $ Texts {
                txtId = pid, txtGrps = prs,
                txtMode = tmode teargs, txtImg = timg teargs
                }
     where dir1 = dir FP.</> "Text"
 
-getTLang lang dir teargs = do
+getTLang tenc lang dir teargs = do
     let base = dir FP.</> show lang
-    tgrps <- mapM (fileToTGrp base) (tfiles teargs)
+    tgrps <- mapM (fileToTGrp tenc base) (tfiles teargs)
     return (lang, tgrps)
 
 -- Read a file and make a TextsGrp
 -- First line is the theme, the rest is one paragraph per line
 -- in the paragraph can be text mixed with images (:<file>:)
-fileToTGrp base filn = do
-    lns <- lines `fmap` readFile (base FP.</> filn)
+fileToTGrp tenc base filn = do
+    lns <- lines `fmap` myReadFile tenc (base FP.</> filn)
     let theme : rest = lns
         grp = if null lns
               then TextGrp { ttheme = "File " ++ filn ++ " is empty!", pars = [] }

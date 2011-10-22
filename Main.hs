@@ -4,6 +4,7 @@ import Data.Monoid (mempty)
 import Data.Char (toUpper)
 import System.Directory (getDirectoryContents, doesFileExist)
 import System.FilePath (addExtension, takeExtensions, (</>))
+import System.IO (mkTextEncoding)
 import Base
 import Catalog
 import Home
@@ -105,38 +106,39 @@ fotoGals = [
 
 main = do
     let pathToCats = baseDir </> catDir
+    tenc <- mkTextEncoding "CP1252"
     catFiles <- map (pathToCats </>) . filter isCat
                     <$> getDirectoryContents pathToCats
-    catalog <- combCats <$> mapM parseCat catFiles
+    catalog <- combCats <$> mapM (parseCat tenc) catFiles
     -- showCat catalog
-    home  <- getHome baseDir homeArgs
-    links <- getLinks "links" baseDir linksArgs
-    vita  <- getTexts "vita" baseDir vitaArgs
-    danke <- getTexts "danke" baseDir dankeArgs
-    kontakt <- getTexts "kontakt" baseDir contactArgs
-    expos <- getTexts "expos" baseDir exposArgs
-    gals  <- readTheGalleries catalog
-    fotogals <- readFotoGals
-    renderToFS baseDir home
-    renderToFS baseDir links
-    renderToFS baseDir vita
-    renderToFS baseDir danke
-    renderToFS baseDir kontakt
-    renderToFS baseDir expos
-    mapM_ (renderToFS baseDir) gals
-    mapM_ (renderToFS baseDir) fotogals
+    home    <- getHome  tenc           baseDir homeArgs
+    links   <- getLinks tenc "links"   baseDir linksArgs
+    vita    <- getTexts tenc "vita"    baseDir vitaArgs
+    danke   <- getTexts tenc "danke"   baseDir dankeArgs
+    kontakt <- getTexts tenc "kontakt" baseDir contactArgs
+    expos   <- getTexts tenc "expos"   baseDir exposArgs
+    gals    <- readTheGalleries tenc catalog
+    fotogals <- readFotoGals tenc
+    renderToFS tenc baseDir home
+    renderToFS tenc baseDir links
+    renderToFS tenc baseDir vita
+    renderToFS tenc baseDir danke
+    renderToFS tenc baseDir kontakt
+    renderToFS tenc baseDir expos
+    mapM_ (renderToFS tenc baseDir) gals
+    mapM_ (renderToFS tenc baseDir) fotogals
 
-readTheGalleries cat = mapM (readGallery cat) galTextAssocs
+readTheGalleries tenc cat = mapM (readGallery tenc cat) galTextAssocs
 
-readGallery cat (g, d, t) = do
+readGallery tenc cat (g, d, t) = do
     let gArgs = GalleryArgs {
                     gaDir = d,
                     gaTextF = t,
                     gaCat = cat
                 }
-    getGallery g baseDir gArgs
+    getGallery tenc g baseDir gArgs
 
-readFotoGals = mapM (readGallery mempty) $ map triple fotoGals
+readFotoGals tenc = mapM (readGallery tenc mempty) $ map triple fotoGals
     where triple g = (g, capi g, Nothing)
           capi [] = []
           capi (c:cs) = toUpper c : cs

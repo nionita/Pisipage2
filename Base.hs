@@ -35,16 +35,37 @@ class Page a where
 -- A basic link can be intern (page identifier) or extern (url)
 data BasicLink = InternLink String | ExternLink String
 
-renderToFS :: Page a => String -> a -> IO ()
-renderToFS root a = do
+renderToFS :: Page a => TextEncoding -> String -> a -> IO ()
+renderToFS tenc root a = do
     putStr $ "Rendering " ++ getIdent a ++ "... "
     hFlush stdout
     let fls = concat [renderPage a l t | l <- [De, En, Ro], t <- [NoJS, JS]]
     -- let fls = concat [renderPage a l t | l <- [De, En, Ro], t <- [NoJS]]
-    mapM_ (renderPart root) fls
+    mapM_ (renderPart tenc root) fls
     putStrLn " done."
 
-renderPart root (pide, cont) = writeFile (fsPath root pide) cont
+-- In the hope that encoding will get it
+renderPart tenc root (pide, cont) = do
+    h <- openFile (fsPath root pide) WriteMode
+    hSetEncoding h tenc
+    hPutStr h cont
+    hClose h
+
+-- In the hope that encoding will get it
+myReadFile :: TextEncoding -> String -> IO String
+myReadFile tenc fname = do
+    h <- openFile fname ReadMode
+    hSetEncoding h tenc
+    -- cont <- hGetContents h
+    cont <- go h []
+    hClose h
+    return cont
+    where go h acc = do
+             eof <- hIsEOF h
+             if eof then return $ unlines $ reverse acc
+                    else do
+                         li <- hGetLine h
+                         go h (li : acc)
 
 -- Finds the file name (no path!) for an ident
 identToName :: PageIdent -> String

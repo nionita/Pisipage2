@@ -1,5 +1,6 @@
 module Home where
 import qualified System.FilePath as FP ((</>))
+import System.IO (TextEncoding)
 import Text.XHtml
 import Text.XHtml.Table (simpleTable)
 import Base
@@ -55,30 +56,30 @@ homeIdent _ = "home"
 
 -- This will create a home content structure given base directory and
 -- the home parameters
-getHome :: String -> HomeArgs -> IO Home
-getHome dir hargs = do
-    prs <- sequence [ getHLang la dir1 hargs | la <- [De, En, Ro]]
+getHome :: TextEncoding -> String -> HomeArgs -> IO Home
+getHome tenc dir hargs = do
+    prs <- sequence [ getHLang tenc la dir1 hargs | la <- [De, En, Ro]]
     return . Home $ prs
     where dir1 = dir FP.</> "Text"
 
 -- Get content for one language
-getHLang lang dir hargs = do
+getHLang tenc lang dir hargs = do
     let base = dir FP.</> show lang
-    pars <- mapM (fileToSub base) (cfiles hargs)
-    news <- parseNews (base FP.</> nfile hargs) (ncnt hargs)
+    pars <- mapM (fileToSub tenc base) (cfiles hargs)
+    news <- parseNews tenc (base FP.</> nfile hargs) (ncnt hargs)
     return (lang, HomeL { hcont = pars, news = news })
 
 -- Make a subsection from a file
-fileToSub base name = do
-    lns <- lines `fmap` readFile (base FP.</> name)
+fileToSub tenc base name = do
+    lns <- lines `fmap` myReadFile tenc (base FP.</> name)
     let par = if null lns
                   then Sub { ptitle = "Empty File" ++ name, plines = [] }
                   else Sub { ptitle = head lns, plines = tail lns }
     return par
 
 -- Make the news from one file
-parseNews path maxl = do
-    lns <- (take maxl . lines) `fmap` readFile path 
+parseNews tenc path maxl = do
+    lns <- (take maxl . lines) `fmap` myReadFile tenc path 
     return $ map lineToNews lns
 
 -- Parse a line into the max 4 components

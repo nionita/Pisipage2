@@ -5,6 +5,7 @@ import Data.List (sort)
 import qualified Data.Map as M
 import qualified System.FilePath as FP
 import System.Directory (getDirectoryContents, doesFileExist)
+import System.IO (TextEncoding)
 import Text.XHtml
 import Text.XHtml.Table (simpleTable)
 import Base
@@ -34,12 +35,12 @@ instance Page Gallery where
 
 -- This will create a gallery structure given the gallery ident,
 -- base directory and gallery arguments
-getGallery :: Ident -> String -> GalleryArgs -> IO Gallery
-getGallery gid dir gargs = do
+getGallery :: TextEncoding -> Ident -> String -> GalleryArgs -> IO Gallery
+getGallery tenc gid dir gargs = do
     let rbdir = dir FP.</> "Bilder" FP.</> gaDir gargs
-    fils <- getGalContent rbdir
+    fils <- getGalContent tenc rbdir
     mtxt <- case gaTextF gargs of
-                Just tfname -> M.fromList `fmap` getGalTexts dir tfname
+                Just tfname -> M.fromList `fmap` getGalTexts tenc dir tfname
                 Nothing     -> return M.empty
     let gal = Gallery {
                   galId = gid,
@@ -52,22 +53,22 @@ getGallery gid dir gargs = do
 
 -- If we have a content file then this are the pictures
 -- otherwise, everyt jpg in the directory
-getGalContent :: String -> IO [String]
-getGalContent dir = do
+getGalContent :: TextEncoding -> String -> IO [String]
+getGalContent tenc dir = do
     let cofname = dir FP.</> "content.txt"
     cof <- doesFileExist cofname
-    if cof then do cf <- readFile cofname
+    if cof then do cf <- myReadFile tenc cofname
                    return $ lines cf
            else do cf <- getDirectoryContents dir
                    return $ sort cf
 
-getGalTexts dir name
-    = sequence [ getGLangText dir name la | la <- [De, En, Ro]]
+getGalTexts tenc dir name
+    = sequence [ getGLangText tenc dir name la | la <- [De, En, Ro]]
 
-getGLangText dir name lang = do
+getGLangText tenc dir name lang = do
     let fn = dir FP.</> "Text" FP.</> show lang FP.</> name
     fex <- doesFileExist fn
-    fcont <- if fex then readFile fn
+    fcont <- if fex then myReadFile tenc fn
                     else return ""
     return (lang, fcont)
 

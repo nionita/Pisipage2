@@ -38,6 +38,7 @@ myhead def_css css_pref js_file
           thetitle (myStringToHtml "Mariana Ionita")
       +++ meta ! [ strAttr "HTTP_EQUIV" "Content-type",
                   strAttr "CONTENT" "text/html; charset=ISO-8859-1" ]
+                  -- strAttr "CONTENT" "text/html; charset=UTF-8" ]
       +++ meta ! [ strAttr "NAME" "description",
                   strAttr "LANGUAGE" "de",
                   strAttr "CONTENT" "Die Internetseite von Mariana Ionita" ]

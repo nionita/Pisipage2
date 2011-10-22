@@ -5,6 +5,8 @@ import Data.Char
 import Data.Monoid
 import Data.Maybe (fromJust)
 import Text.ParserCombinators.Parsec
+import System.IO (TextEncoding)
+import Base (myReadFile)
 
 -- A catalog entry
 data CEntry = CEntry {
@@ -71,10 +73,10 @@ namesToCols = M.fromList $ [
         ("price", ["Preis", "Price"])
     ]
 
-parseCat :: String -> IO Catalog
-parseCat file = do
+parseCat :: TextEncoding -> String -> IO Catalog
+parseCat tenc file = do
     putStrLn $ "Reading catalog " ++ file
-    lns <- (filter nonEmpty . lines) `fmap` readFile file
+    lns <- (filter nonEmpty . lines) `fmap` myReadFile tenc file
     when (null lns) $ fail $ "No line in catalog " ++ file
     let parsEn = makeParseFunc $ head lns
     return $ Catalog $ M.fromList $ map parsEn $ tail lns

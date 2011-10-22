@@ -1,5 +1,6 @@
 module Links where
 import qualified System.FilePath as FP ((</>))
+import System.IO (TextEncoding)
 import Text.XHtml
 import Base
 import Common
@@ -28,22 +29,22 @@ linksIdent (Links pid _) = pid
 
 -- This will create a links content structure given the page ident,
 -- the home directory and the links parameters
-getLinks :: Ident -> String -> LinksArgs -> IO Links
-getLinks pid dir liargs = do
-    prs <- sequence [ getLLang la dir1 liargs | la <- [De, En, Ro]]
+getLinks :: TextEncoding -> Ident -> String -> LinksArgs -> IO Links
+getLinks tenc pid dir liargs = do
+    prs <- sequence [ getLLang tenc la dir1 liargs | la <- [De, En, Ro]]
     return . Links pid $ prs
     where dir1 = dir FP.</> "Text"
 
-getLLang lang dir liargs = do
+getLLang tenc lang dir liargs = do
     let base = dir FP.</> show lang
-    lgrps <- mapM (fileToLGrp base) (lfiles liargs)
+    lgrps <- mapM (fileToLGrp tenc base) (lfiles liargs)
     return (lang, lgrps)
 
 -- Read a file and make a LinksGrp
 -- First line is the theme, the rest is one link per line, in the form:
 -- url | descrition of the link
-fileToLGrp base filn = do
-    lns <- lines `fmap` readFile (base FP.</> filn)
+fileToLGrp tenc base filn = do
+    lns <- lines `fmap` myReadFile tenc (base FP.</> filn)
     let theme : rest = lns
         grp = if null lns
               then LinksGrp { ltheme = "File is empty!", links = [] }
