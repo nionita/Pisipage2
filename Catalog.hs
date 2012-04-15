@@ -130,7 +130,8 @@ preisF = do
     c <- noneOf ",0123456789"
     spaces
     n <- numberF
-    return $ c : ' ' : n
+    -- return $ c : ' ' : n
+    return $ "Euro " ++ n
 
 emptyLine = do
     many1 (char ',')

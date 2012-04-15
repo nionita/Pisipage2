@@ -28,7 +28,6 @@ linksArgs = LinksArgs {
                     "Links-Kuenstler.txt",
                     "Links-Fotografie.txt",
                     "Links-Zeitung.txt",
-                    "Links-Museen.txt",
                     "Links-Diverse.txt"
                 ]
             }

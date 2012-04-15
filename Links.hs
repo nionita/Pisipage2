@@ -66,10 +66,13 @@ renderLinks li@(Links myid ls) la rt = [(pid, str1)]
                      << thediv `hid` "links" << renderLCont ls1
 
 -- render links content part
-renderLCont ls = foldl (+++) noHtml $ map renderLinksGrp ls
+-- renderLCont ls = foldl (+++) noHtml $ map renderLinksGrp ls
+renderLCont ls = foldl1 with2br $ map renderLinksGrp ls
+    where with2br a b = a +++ br +++ br +++ b
 
 renderLinksGrp lg = foldl (+++) stheme $ map renderLink $ links lg
-    where stheme = br +++ br +++ h4 << myStringToHtml (ltheme lg)
+    -- where stheme = br +++ br +++ h4 << myStringToHtml (ltheme lg)
+    where stheme = h4 << myStringToHtml (ltheme lg)
 
 renderLink li = br +++ anchor hdesc ! [href (llink li)]
     where hdesc = myStringToHtml $ if null (ldesc li) then llink li else ldesc li
