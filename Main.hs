@@ -27,8 +27,7 @@ linksArgs = LinksArgs {
                     "Links-Galerien.txt",
                     "Links-Kuenstler.txt",
                     "Links-Fotografie.txt",
-                    "Links-Zeitung.txt",
-                    "Links-Diverse.txt"
+                    "Links-Zeitung.txt"
                 ]
             }
 
@@ -46,6 +45,7 @@ contactArgs = TextsArgs {
 
 exposArgs = TextsArgs {
                 tfiles = [
+                    "Expo2014.txt",
                     "Expo2013.txt",
                     "Expo2012.txt",
                     "Expo2011.txt",
@@ -115,7 +115,7 @@ main = do
     home    <- getHome  tenc           baseDir homeArgs
     links   <- getLinks tenc "links"   baseDir linksArgs
     vita    <- getTexts tenc "vita"    baseDir vitaArgs
-    danke   <- getTexts tenc "danke"   baseDir dankeArgs
+    -- danke   <- getTexts tenc "danke"   baseDir dankeArgs
     kontakt <- getTexts tenc "kontakt" baseDir contactArgs
     expos   <- getTexts tenc "expos"   baseDir exposArgs
     gals    <- readTheGalleries tenc catalog
@@ -123,7 +123,7 @@ main = do
     renderToFS tenc baseDir home
     renderToFS tenc baseDir links
     renderToFS tenc baseDir vita
-    renderToFS tenc baseDir danke
+    -- renderToFS tenc baseDir danke
     renderToFS tenc baseDir kontakt
     renderToFS tenc baseDir expos
     mapM_ (renderToFS tenc baseDir) gals

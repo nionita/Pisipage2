@@ -11,7 +11,7 @@ links = zip [1..] [
             Item "vita" [(De, "vita"), (En, "vita"), (Ro, "vita")],
             Item "expos" [(De, "ausstellungen"), (En, "exhibitions"), (Ro, "expozitii")],
             Item "links" [(De, "links"), (En, "links"), (Ro, "links")],
-            Item "danke" [(De, "danke"), (En, "thanks"), (Ro, "multumiri")],
+            -- Item "danke" [(De, "danke"), (En, "thanks"), (Ro, "multumiri")],
             Item "kontakt" [(De, "kontakt"), (En, "contact"), (Ro, "contact")],
             --
             Item "gal1" [(De, "galerie I"), (En, "gallery I"), (Ro, "galeria I")],
@@ -50,7 +50,8 @@ menuDiv la rt parid = navi pid la rt csel ls
           ls = map f [De, En, Ro]
           f x = (x, htPath la $ parid { rlang = x })
 
-navi pid la rt csel ls = makenavi nads csel la 6 5
+-- navi pid la rt csel ls = makenavi nads csel la 6 5
+navi pid la rt csel ls = makenavi nads csel la 5 5
     where nads = Navi { naMenu = rs, naLang = ls }
           rs = map f links
           f (i, Item p nms) =
