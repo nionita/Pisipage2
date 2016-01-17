@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Catalog where
 import Control.Monad (when)
 import qualified Data.Map as M

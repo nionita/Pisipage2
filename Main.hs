@@ -26,19 +26,9 @@ linksArgs = LinksArgs {
                 lfiles = [
                     "Links-Vereine.txt",
                     "Links-Galerien.txt",
-                    -- "Links-Kuenstler.txt",
-                    -- "Links-Fotografie.txt",
                     "Links-Zeitung.txt"
                 ]
             }
-
-{-
-vitaArgs = TextsArgs {
-                tfiles = [ "Vita.txt" ],
-                tmode = Theme,
-                timg = Just "/Bilder/mariana.jpg"
-            }
--}
 
 contactArgs = TextsArgs {
                 tfiles = [ "Kontakt.txt" ],
@@ -48,6 +38,7 @@ contactArgs = TextsArgs {
 
 exposArgs = TextsArgs {
                 tfiles = [
+                    "Expo2015.txt",
                     "Expo2014.txt",
                     "Expo2013.txt",
                     "Expo2012.txt",
@@ -76,20 +67,6 @@ dankeArgs = TextsArgs {
                 timg = Nothing
             }
 
-{--
-galTextAssocs = [
-        ("gal1", "galerie1", Just "Sargent.txt"),
-        ("gal2", "galerie2", Just "Cameron.txt"),
-        ("gal3", "galerie3", Just "Modersohn.txt"),
-        ("gal4", "galerie4", Just "Kandinsky.txt"),
-        ("gal5", "galerie5", Just "Michelangelo.txt"),
-        ("gal6", "galerie6", Just "Wilde.txt"),
-        ("gal7", "galerie7", Just "Klinger.txt"),
-        ("gal8", "galerie8", Just "Picasso.txt"),
-        ("gal9", "galerie9", Just "Chardin.txt"),
-        ("gal10", "galerie10", Just "van Gogh.txt")
-    ]
---}
 galTextAssocs = [
         ("gal1", "galerie1", Nothing),
         ("gal2", "galerie2", Nothing),
