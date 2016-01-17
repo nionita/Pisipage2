@@ -1,18 +1,16 @@
-module Home where
-import qualified System.FilePath as FP ((</>))
+module Vita where
+-- import qualified System.FilePath as FP ((</>))
+import System.FilePath ((</>))
 import System.IO (TextEncoding)
-import Text.XHtml
+import Text.XHtml hiding ((</>))
 import Text.XHtml.Table (simpleTable)
 import Base
 import Common
 import Helpers
 
 -- We need following information:
--- 1. for the content of home: per language and subsection (for example "Why?"
---    or "How?") one text file (located in Text/<lang>). The files will be
---    rendered exactly in the order in which they appear in the list. Every
---    line in one file will be rendered as an paragraph, except the first line,
---    which will be rendered as the subsection title
+-- 1. for the content of home: now we make vita as first screen
+--    Vita was a text, so we use text elements to render it
 -- 2. for the news section: per language one file (located in Text/<lang>).
 --    The file has one news per line, with 4 columns separated by '|':
 --    col 1: a date (or date range)
@@ -24,8 +22,9 @@ import Helpers
 -- 3. A number of news to render. Only the first ones will be rendered. This
 --    is good to keep older news in files, without to render them (space).
 
-data HomeArgs = HomeArgs {
+data VitaArgs = VitaArgs {
                     cfiles :: [String],
+                    cimg   :: Maybe String,
                     nfile  :: String,
                     ncnt   :: Int
             }
@@ -41,37 +40,40 @@ data News = News {
                 nlink :: Maybe BasicLink
             }
 
-data HomeL = HomeL {
+data VitaL = VitaL {
                  hcont :: [Sub],
                  news  :: [News]
              }
 
-newtype Home = Home [(Lang, HomeL)]
+data Vita = Vita {
+                vita :: [(Lang, VitaL)],
+                vimg :: Maybe String
+            }
 
-instance Page Home where
-    getIdent = homeIdent
-    renderPage = renderHome
+instance Page Vita where
+    getIdent = vitaIdent
+    renderPage = renderVita
 
-homeIdent _ = "home"
+vitaIdent _ = "vita"
 
--- This will create a home content structure given base directory and
--- the home parameters
-getHome :: TextEncoding -> String -> HomeArgs -> IO Home
-getHome tenc dir hargs = do
-    prs <- sequence [ getHLang tenc la dir1 hargs | la <- [De, En, Ro]]
-    return . Home $ prs
-    where dir1 = dir FP.</> "Text"
+-- This will create a vita content structure given base directory and
+-- the vita parameters
+getVita :: TextEncoding -> String -> VitaArgs -> IO Vita
+getVita tenc dir vargs = do
+    prs <- sequence [ getVLang tenc la dir1 vargs | la <- [De, En, Ro]]
+    return $ Vita { vita = prs, vimg = cimg vargs }
+    where dir1 = dir </> "Text"
 
 -- Get content for one language
-getHLang tenc lang dir hargs = do
-    let base = dir FP.</> show lang
-    pars <- mapM (fileToSub tenc base) (cfiles hargs)
-    news <- parseNews tenc (base FP.</> nfile hargs) (ncnt hargs)
-    return (lang, HomeL { hcont = pars, news = news })
+getVLang tenc lang dir vargs = do
+    let base = dir </> show lang
+    pars <- mapM (fileToSub tenc base) (cfiles vargs)
+    news <- parseNews tenc (base </> nfile vargs) (ncnt vargs)
+    return (lang, VitaL { hcont = pars, news = news })
 
 -- Make a subsection from a file
 fileToSub tenc base name = do
-    lns <- lines `fmap` myReadFile tenc (base FP.</> name)
+    lns <- lines `fmap` myReadFile tenc (base </> name)
     let par = if null lns
                   then Sub { ptitle = "Empty File" ++ name, plines = [] }
                   else Sub { ptitle = head lns, plines = tail lns }
@@ -93,26 +95,27 @@ lineToNews line
           setNText n v = if null v then n else n { ntext = v }
           setNLink n v = if null v then n else n { nlink = parseLink v }
 
--- Render the home page
-renderHome :: Home -> Lang -> RenderType -> [(PageIdent, String)]
-renderHome ho@(Home h) la rt = [(pid, str1)]
-    where myid = getIdent ho
-          homel = maybe defl id $ lookup la h
+-- Render the vita page
+renderVita :: Vita -> Lang -> RenderType -> [(PageIdent, String)]
+renderVita vi la rt = [(pid, str1)]
+    where myid = getIdent vi
+          vital = maybe defl id $ lookup la $ vita vi
           str1 = prettyHtml $ basicStruct la rt pid cont cnews
-          defl = HomeL { hcont = [errs], news = [] }
+          defl = VitaL { hcont = [errs], news = [] }
           errs = Sub { ptitle = "No content for " ++ show la, plines = [] }
           cont = thediv `hid` "normtext" <<
-                    thediv `hid` "home"
-                        << (cont1 +++ choosejs +++ chooselang)
-          cont1 = renderHCont $ hcont homel
+                    thediv `hid` "vita"
+                        << (rimg +++ cont1 +++ choosejs +++ chooselang)
+          rimg = maybe noHtml (\f -> image ! [src f]) $ vimg vi
+          cont1 = renderHCont $ hcont vital
           choosejs = noHtml
           chooselang = noHtml
-          cnews = renderNews pid $ news homel
+          cnews = renderNews pid $ news vital
           pid = PageIdent { ident = myid, rlang = la, rtype = rt, elmt = 0 }
 
--- render home content
+-- render vita content
 renderHCont :: [Sub] -> Html
-renderHCont ss = thediv `hid` "hometext"
+renderHCont ss = thediv `hid` "vitatext"
                  << (foldl (+++) noHtml $ map renderSub ss)
 
 renderSub :: Sub -> Html

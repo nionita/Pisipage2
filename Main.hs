@@ -7,7 +7,7 @@ import System.FilePath (addExtension, takeExtensions, (</>))
 import System.IO (mkTextEncoding)
 import Base
 import Catalog
-import Home
+import Vita
 import Links
 import Gallery
 import Texts
@@ -15,8 +15,9 @@ import Texts
 baseDir = "J:\\Pisi\\o1"
 catDir = "KATALOG2009"
 
-homeArgs = HomeArgs {
-              cfiles = [ "Home-Warum.txt", "Home-Wie.txt" ],
+homeArgs = VitaArgs {
+              cfiles = [ "Vita.txt" ],
+              cimg   = Just "/Bilder/mariana.jpg",
               nfile  = "News.txt",
               ncnt   = 5
            }
@@ -25,17 +26,19 @@ linksArgs = LinksArgs {
                 lfiles = [
                     "Links-Vereine.txt",
                     "Links-Galerien.txt",
-                    "Links-Kuenstler.txt",
-                    "Links-Fotografie.txt",
+                    -- "Links-Kuenstler.txt",
+                    -- "Links-Fotografie.txt",
                     "Links-Zeitung.txt"
                 ]
             }
 
+{-
 vitaArgs = TextsArgs {
                 tfiles = [ "Vita.txt" ],
                 tmode = Theme,
                 timg = Just "/Bilder/mariana.jpg"
             }
+-}
 
 contactArgs = TextsArgs {
                 tfiles = [ "Kontakt.txt" ],
@@ -112,17 +115,17 @@ main = do
                     <$> getDirectoryContents pathToCats
     catalog <- combCats <$> mapM (parseCat tenc) catFiles
     -- showCat catalog
-    home    <- getHome  tenc           baseDir homeArgs
+    vita    <- getVita  tenc           baseDir homeArgs
     links   <- getLinks tenc "links"   baseDir linksArgs
-    vita    <- getTexts tenc "vita"    baseDir vitaArgs
+    -- vita    <- getTexts tenc "vita"    baseDir vitaArgs
     -- danke   <- getTexts tenc "danke"   baseDir dankeArgs
     kontakt <- getTexts tenc "kontakt" baseDir contactArgs
     expos   <- getTexts tenc "expos"   baseDir exposArgs
     gals    <- readTheGalleries tenc catalog
     fotogals <- readFotoGals tenc
-    renderToFS tenc baseDir home
-    renderToFS tenc baseDir links
     renderToFS tenc baseDir vita
+    -- renderToFS tenc baseDir home
+    renderToFS tenc baseDir links
     -- renderToFS tenc baseDir danke
     renderToFS tenc baseDir kontakt
     renderToFS tenc baseDir expos

@@ -7,7 +7,7 @@ import RenderNavi
 -- Here is the definition of the main navigation menu with the idents of
 -- the main pages and theyre descriptions in the render languages
 links = zip [1..] [
-            Item "home" [(De, "home"), (En, "home"), (Ro, "home")],
+            -- Item "home" [(De, "home"), (En, "home"), (Ro, "home")],
             Item "vita" [(De, "vita"), (En, "vita"), (Ro, "vita")],
             Item "expos" [(De, "ausstellungen"), (En, "exhibitions"), (Ro, "expozitii")],
             Item "links" [(De, "links"), (En, "links"), (Ro, "links")],
@@ -51,7 +51,7 @@ menuDiv la rt parid = navi pid la rt csel ls
           f x = (x, htPath la $ parid { rlang = x })
 
 -- navi pid la rt csel ls = makenavi nads csel la 6 5
-navi pid la rt csel ls = makenavi nads csel la 5 5
+navi pid la rt csel ls = makenavi nads csel la 4 5
     where nads = Navi { naMenu = rs, naLang = ls }
           rs = map f links
           f (i, Item p nms) =
