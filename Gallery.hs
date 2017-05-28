@@ -173,12 +173,13 @@ setTTitle fil cat html = html ! [ strAttr "title" tit ]
 
 -- Extract the catalog key from the file name
 -- The file name has the structure:
--- [<ord>-]<key>-rest
+-- [<ord>-]<key>[-rest].jpg
 -- where ord is for correct order of the thumbs
 getKeyFromFileName fn
-    | len == 3 = Just $ subs!!i
-    | len == 2 = Just $ subs!!0
+    | len == 3 = Just $ subs!!1
+    | len == 1 = Just $ subs!!0
+    | len == 2 = Just $ subs!!i
     | otherwise = Nothing
-    where subs = mbreak 3 (== '-') fn
+    where subs = mbreak 3 (== '-') $ FP.dropExtension fn
           len = length subs
           i = if all isDigit (subs!!0) then 1 else 0

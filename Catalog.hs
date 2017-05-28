@@ -126,12 +126,21 @@ stringF = do
     char '"'
     return val
 
-numberF = many digit
+-- numberF = many digit
+
+numberF = do
+    n <- many digit
+    optional $ do
+        spaces
+        noneOf ","
+    return n
 
 preisF = do
     c <- noneOf ",0123456789"
     spaces
     n <- numberF
+    spaces
+    _ <- optional $ noneOf ","
     -- return $ c : ' ' : n
     return $ "Euro " ++ n
 
