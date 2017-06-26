@@ -45,12 +45,12 @@ makeBTitle ce = foldl (+++) (makeTTitle ce) [cyear ce, ctech ce, cmdims, formpri
                             else cdims ce ++ " cm"
           formprice = if null (cprice ce)
                          then ""
-                         else cprice ce
-{--
-                         else if cprice ce `endswith` "€"
-                                 then cprice ce
-                                 else cprice ce ++ " €"
---}
+                         else if onlyNumeric $ cprice ce
+                                 then cprice ce ++ " euro"
+                                 else cprice ce
+
+onlyNumeric :: String -> Bool
+onlyNumeric = all (`elem` ['0'..'9'])
 
 makeTTitle :: CEntry -> String
 makeTTitle ce = nicetitle [] $ ctitle ce
@@ -141,8 +141,9 @@ preisF = do
     n <- numberF
     spaces
     _ <- optional $ noneOf ","
+    return n
     -- return $ c : ' ' : n
-    return $ "Euro " ++ n
+    -- return $ "Euro " ++ n
 
 emptyLine = do
     many1 (char ',')
