@@ -19,7 +19,7 @@ homeArgs = VitaArgs {
               cfiles = [ "Vita.txt" ],
               cimg   = Just "/Bilder/mariana.jpg",
               nfile  = "News.txt",
-              ncnt   = 5
+              ncnt   = 3
            }
 
 linksArgs = LinksArgs {
@@ -38,6 +38,7 @@ contactArgs = TextsArgs {
 
 exposArgs = TextsArgs {
                 tfiles = [
+                    "Expo2017.txt",
                     "Expo2016.txt",
                     "Expo2015.txt",
                     "Expo2014.txt",
