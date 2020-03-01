@@ -1,8 +1,10 @@
 module Main where
 import Control.Applicative
-import Data.Monoid (mempty)
 import Data.Char (toUpper)
+import Data.Monoid (mempty)
+import Data.List (intersperse)
 import System.Directory (getDirectoryContents, doesFileExist)
+import System.Environment (getArgs)
 import System.FilePath (addExtension, takeExtensions, (</>))
 import System.IO (mkTextEncoding)
 import Base
@@ -12,7 +14,7 @@ import Links
 import Gallery
 import Texts
 
-baseDir = "J:\\Pisi\\o1"
+-- baseDir = "J:\\Pisi\\o1"
 catDir = "KATALOG2009"
 
 homeArgs = VitaArgs {
@@ -38,6 +40,7 @@ contactArgs = TextsArgs {
 
 exposArgs = TextsArgs {
                 tfiles = [
+                    "Expo2019.txt",
                     "Expo2018.txt",
                     "Expo2017.txt",
                     "Expo2016.txt",
@@ -89,40 +92,48 @@ fotoGals = [
     ]
 
 main = do
+    args <- getArgs
+    case args of
+        dir : [] -> generatePage dir
+        _        -> argsError args
+
+generatePage :: String -> IO ()
+generatePage baseDir = do
+    putStrLn $ "Generate page in " ++ baseDir
     let pathToCats = baseDir </> catDir
-    tenc <- mkTextEncoding "CP1252"
+    encoding <- mkTextEncoding "CP1252"
     catFiles <- map (pathToCats </>) . filter isCat
                     <$> getDirectoryContents pathToCats
-    catalog <- combCats <$> mapM (parseCat tenc) catFiles
+    catalog <- combCats <$> mapM (parseCat encoding) catFiles
     -- showCat catalog
-    vita    <- getVita  tenc           baseDir homeArgs
-    links   <- getLinks tenc "links"   baseDir linksArgs
-    -- vita    <- getTexts tenc "vita"    baseDir vitaArgs
-    -- danke   <- getTexts tenc "danke"   baseDir dankeArgs
-    kontakt <- getTexts tenc "kontakt" baseDir contactArgs
-    expos   <- getTexts tenc "expos"   baseDir exposArgs
-    gals    <- readTheGalleries tenc catalog
-    fotogals <- readFotoGals tenc
-    renderToFS tenc baseDir vita
-    -- renderToFS tenc baseDir home
-    renderToFS tenc baseDir links
-    -- renderToFS tenc baseDir danke
-    renderToFS tenc baseDir kontakt
-    renderToFS tenc baseDir expos
-    mapM_ (renderToFS tenc baseDir) gals
-    mapM_ (renderToFS tenc baseDir) fotogals
+    vita    <- getVita  encoding           baseDir homeArgs
+    links   <- getLinks encoding "links"   baseDir linksArgs
+    -- vita    <- getTexts encoding "vita"    baseDir vitaArgs
+    -- danke   <- getTexts encoding "danke"   baseDir dankeArgs
+    kontakt <- getTexts encoding "kontakt" baseDir contactArgs
+    expos   <- getTexts encoding "expos"   baseDir exposArgs
+    gals    <- readTheGalleries encoding baseDir catalog
+    fotogals <- readFotoGals encoding baseDir
+    renderToFS encoding baseDir vita
+    -- renderToFS encoding baseDir home
+    renderToFS encoding baseDir links
+    -- renderToFS encoding baseDir danke
+    renderToFS encoding baseDir kontakt
+    renderToFS encoding baseDir expos
+    mapM_ (renderToFS encoding baseDir) gals
+    mapM_ (renderToFS encoding baseDir) fotogals
 
-readTheGalleries tenc cat = mapM (readGallery tenc cat) galTextAssocs
+readTheGalleries encoding baseDir cat = mapM (readGallery encoding baseDir cat) galTextAssocs
 
-readGallery tenc cat (g, d, t) = do
+readGallery encoding baseDir cat (g, d, t) = do
     let gArgs = GalleryArgs {
                     gaDir = d,
                     gaTextF = t,
                     gaCat = cat
                 }
-    getGallery tenc g baseDir gArgs
+    getGallery encoding g baseDir gArgs
 
-readFotoGals tenc = mapM (readGallery tenc mempty) $ map triple fotoGals
+readFotoGals encoding baseDir = mapM (readGallery encoding baseDir mempty) $ map triple fotoGals
     where triple g = (g, capi g, Nothing)
           capi [] = []
           capi (c:cs) = toUpper c : cs
@@ -131,3 +142,9 @@ isCat :: String -> Bool
 isCat f = takeExtensions f == ".csv"
 
 showCat cat = mapM_ putStrLn $ map show $ filter ((/= "") . cprice) $ catElems cat
+
+argsError :: [String] -> IO ()
+argsError args = do
+    let argstr = concat $ intersperse " " args
+    putStrLn $ "Falsche Aufruf Parameter:" ++ argstr
+    putStrLn "Aufruf: Pisipage2 <base-directory>"
