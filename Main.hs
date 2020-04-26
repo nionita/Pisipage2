@@ -26,6 +26,7 @@ homeArgs = VitaArgs {
 
 linksArgs = LinksArgs {
                 lfiles = [
+                    "Links-Weitere.txt",
                     "Links-Vereine.txt",
                     "Links-Galerien.txt",
                     "Links-Zeitung.txt"
